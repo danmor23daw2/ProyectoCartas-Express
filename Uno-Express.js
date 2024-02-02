@@ -52,30 +52,76 @@ class Partida {
     }
   }
 
-  tirarCarta(numJugador, carta) {
+ tirarCarta(numJugador, carta) {
     if (numJugador === this.turnoActual) {
-      const maJugador = this.mans[numJugador - 1];
+        const maJugador = this.mans[numJugador - 1];
 
-      if (this.puedeTirarCarta(carta)) {
-        const cartaIndex = maJugador.indexOf(carta);
-        if (cartaIndex !== -1) {
-          maJugador.splice(cartaIndex, 1);
-          this.ultimaCarta = carta;
+        if (this.ultimaCarta === null) {
+            // No hay carta inicial, permitir cualquier carta
+            if (maJugador.includes(carta)) {
+                const cartaIndex = maJugador.indexOf(carta);
+                maJugador.splice(cartaIndex, 1);
 
-          this.turnoActual = this.turnoActual % 2 + 1;
-          this.jugadoresQueHanPasado = 0;
+                if (carta.includes("AgafaDos")) {
+                    const jugadorSiguiente = this.turnoActual % 2 + 1;
 
-          return `El jugador ${numJugador} ha tirado una carta: ${carta}`;
+                    for (let i = 0; i < 2; i++) {
+                        this.mans[jugadorSiguiente - 1].push(this.generarCartaRandom());
+                    }
+
+                    this.jugadoresQueHanPasado = 2;
+                    this.turnoActual = numJugador;
+
+                    return `El jugador ${numJugador} ha tirado ${carta}. El jugador ${jugadorSiguiente} ha robado 2 cartas. No puede tirar en la siguiente ronda.`;
+                } else {
+                    this.turnoActual = this.turnoActual % 2 + 1;
+                }
+
+                this.ultimaCarta = carta;
+
+                return `El jugador ${numJugador} ha tirado una carta: ${carta}`;
+            } else {
+                return `La carta no está en la mano del jugador ${numJugador}`;
+            }
         } else {
-          return `La carta no está en la mano del jugador ${numJugador}`;
+            if (this.puedeTirarCarta(carta)) {
+                const cartaIndex = maJugador.indexOf(carta);
+                if (cartaIndex !== -1) {
+                    maJugador.splice(cartaIndex, 1);
+
+                    if (carta.includes("AgafaDos")) {
+                        const jugadorSiguiente = this.turnoActual % 2 + 1;
+
+                        for (let i = 0; i < 2; i++) {
+                            this.mans[jugadorSiguiente - 1].push(this.generarCartaRandom());
+                        }
+
+                        this.jugadoresQueHanPasado = 2;
+                        this.turnoActual = numJugador;
+
+                        return `El jugador ${numJugador} ha tirado ${carta}. El jugador ${jugadorSiguiente} ha robado 2 cartas. No puede tirar en la siguiente ronda.`;
+                    } else {
+                        this.turnoActual = this.turnoActual % 2 + 1;
+                    }
+
+                    this.ultimaCarta = carta;
+
+                    return `El jugador ${numJugador} ha tirado una carta: ${carta}`;
+                } else {
+                    return `La carta no está en la mano del jugador ${numJugador}`;
+                }
+            } else {
+                return `Mal: Debes tirar una carta que tenga el mismo color, el mismo número, o una carta especial ("Salta", "Inverteix","AgafaDos").`;
+            }
         }
-      } else {
-        return `No puedes tirar esa carta en este momento.`;
-      }
     } else {
-      return "No es tu turno para tirar.";
+        return "No es tu turno para tirar.";
     }
-  }
+}
+
+
+
+
 
   
   puedeTirarCarta(carta) {
