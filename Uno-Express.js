@@ -12,6 +12,19 @@ class Partida {
     this.codiPartida = codiPartida;
     this.mans = [];
     this.repartirCartes(7);
+    this.ultimaCarta = null;
+    this.turnoActual = 1;
+    this.jugadoresQueHanPasado = 0;
+  }
+
+  generarCartaRandom() {
+    const colors = ["Vermell", "Verd", "Blau", "Groc"];
+    const valors = ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9"];
+
+    const colorIndex = Math.floor(Math.random() * colors.length);
+    const valorIndex = Math.floor(Math.random() * valors.length);
+
+    return `${colors[colorIndex]} ${valors[valorIndex]}`;
   }
 
   repartirCartes(cartesPerJugador) {
@@ -40,19 +53,45 @@ class Partida {
   }
 
   tirarCarta(numJugador, carta) {
-    if (numJugador > 0 && numJugador <= this.mans.length) {
+    if (numJugador === this.turnoActual) {
       const maJugador = this.mans[numJugador - 1];
 
-      const cartaIndex = maJugador.indexOf(carta);
-      if (cartaIndex !== -1) {
-        maJugador.splice(cartaIndex, 1);
-        return `El jugador ${numJugador} ha tirado una carta: ${carta}`;
+      if (this.puedeTirarCarta(carta)) {
+        const cartaIndex = maJugador.indexOf(carta);
+        if (cartaIndex !== -1) {
+          maJugador.splice(cartaIndex, 1);
+          this.ultimaCarta = carta;
+
+          this.turnoActual = this.turnoActual % 2 + 1;
+          this.jugadoresQueHanPasado = 0;
+
+          return `El jugador ${numJugador} ha tirado una carta: ${carta}`;
+        } else {
+          return `La carta no está en la mano del jugador ${numJugador}`;
+        }
       } else {
-        return `La carta no está en la mano del jugador ${numJugador}`;
+        return `No puedes tirar esa carta en este momento.`;
       }
     } else {
-      return "Número de jugador no válido.";
+      return "No es tu turno para tirar.";
     }
+  }
+
+  
+  puedeTirarCarta(carta) {
+    if (!this.ultimaCarta) {
+      return true; 
+    }
+  
+    const [ultimaColor, ultimaNumero] = this.ultimaCarta.split(' ');
+    const [color, numero] = carta.split(' ');
+  
+    if (numero === "Salta" || numero === "Inverteix" || numero === "AgafaDos") {
+
+      return color === ultimaColor || numero === ultimaNumero;
+    }
+  
+    return color === ultimaColor || numero === ultimaNumero;
   }
 
   afegirMaJugador(maJugador) {
@@ -87,7 +126,12 @@ app.post('/api/iniciarJoc/:codiPartida', (req, res) => {
   if (!esPartidaValida(codiPartida)) {
     const novaPartida = new Partida(codiPartida);
     partides.push(novaPartida);
-    res.send(`Joc iniciat amb èxit. Codi de partida: ${codiPartida}`);
+    let cartaInicial;
+    do {
+      cartaInicial = novaPartida.generarCartaRandom();
+    } while (cartaInicial.includes("Salta") || cartaInicial.includes("Inverteix") || cartaInicial.includes("AgafaDos"));
+
+    res.send(`Joc iniciat amb èxit. Codi de partida: ${codiPartida}. Carta inicial: ${cartaInicial}`);
   } else {
     res.send(`El codi de partida ${codiPartida} ja existeix. Si us plau, tria'n un altre.`);
   }
@@ -113,25 +157,30 @@ app.put('/api/tirarCarta/:codiPartida/:carta/:numJugador', (req, res) => {
     res.send("Codi de partida no vàlid.");
   }
 });
-
-app.put('/api/moureJugador/:codiPartida/passa', (req, res) => {
+app.put('/api/moureJugador/:codiPartida/passa/:numJugador', (req, res) => {
   const codiPartida = parseInt(req.params.codiPartida);
+  const numJugador = parseInt(req.params.numJugador);
+
   if (esPartidaValida(codiPartida)) {
-    res.send("El jugador ha passat el seu torn.");
+    const partida = partides[codiPartida - 1];
+
+    if (numJugador === partida.turnoActual) {
+      partida.turnoActual = partida.turnoActual % 2 + 1;
+      partida.jugadoresQueHanPasado = 0;
+
+      const cartaRobada = partida.generarCartaRandom();
+      partida.mans[numJugador - 1].push(cartaRobada);
+
+      res.send(`El turno se ha pasado al jugador ${partida.turnoActual}. El jugador ${numJugador} ha robado 1 carta.`);
+    } else {
+      res.send("No es tu turno para pasar.");
+    }
   } else {
     res.send("Codi de partida no vàlid.");
   }
 });
 
-app.put('/api/moureJugador/:codiPartida/robar/:quantitat', (req, res) => {
-  const codiPartida = parseInt(req.params.codiPartida);
-  const quantitat = parseInt(req.params.quantitat);
-  if (esPartidaValida(codiPartida)) {
-    res.send(`El jugador ha robat ${quantitat} cartes.`);
-  } else {
-    res.send("Codi de partida no vàlid.");
-  }
-});
+
 
 app.delete('/api/acabarJoc/:codiPartida', (req, res) => {
   const codiPartida = parseInt(req.params.codiPartida);
