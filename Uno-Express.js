@@ -57,16 +57,26 @@ class Partida {
         const maJugador = this.mans[numJugador - 1];
 
         if (this.ultimaCarta === null) {
-            // No hay carta inicial, permitir cualquier carta
             if (maJugador.includes(carta)) {
                 const cartaIndex = maJugador.indexOf(carta);
                 maJugador.splice(cartaIndex, 1);
 
-                if (this.activarSalta(carta)) {
-                    // Skip the next player's turn
+                if (carta.includes("AgafaDos")) {
+                    const jugadorSiguiente = this.turnoActual % 2 + 1;
+
+                    for (let i = 0; i < 2; i++) {
+                        this.mans[jugadorSiguiente - 1].push(this.generarCartaRandom());
+                    }
+
+                    this.jugadoresQueHanPasado = 2;
                     this.turnoActual = numJugador;
+
+                    return `El jugador ${numJugador} ha tirado ${carta}. El jugador ${jugadorSiguiente} ha robado 2 cartas. No puede tirar en la siguiente ronda.`;
+                } else if (carta.includes("Salta") || carta.includes("Inverteix")) {
+                    this.turnoActual = numJugador;
+                    this.ultimaCarta = carta;
+                    return `El jugador ${numJugador} ha tirado ${carta}. Se ha saltado el turno del rival.`;
                 } else {
-                    // Allow the next player to take their turn
                     this.turnoActual = this.turnoActual % 2 + 1;
                 }
 
@@ -82,8 +92,21 @@ class Partida {
                 if (cartaIndex !== -1) {
                     maJugador.splice(cartaIndex, 1);
 
-                    if (this.activarSalta(carta)) {
+                    if (carta.includes("AgafaDos")) {
+                        const jugadorSiguiente = this.turnoActual % 2 + 1;
+
+                        for (let i = 0; i < 2; i++) {
+                            this.mans[jugadorSiguiente - 1].push(this.generarCartaRandom());
+                        }
+
+                        this.jugadoresQueHanPasado = 2;
                         this.turnoActual = numJugador;
+
+                        return `El jugador ${numJugador} ha tirado ${carta}. El jugador ${jugadorSiguiente} ha robado 2 cartas. No puede tirar en la siguiente ronda.`;
+                    } else if (carta.includes("Salta") || carta.includes("Inverteix")) {
+                        this.turnoActual = numJugador;
+                        this.ultimaCarta = carta;
+                        return `El jugador ${numJugador} ha tirado ${carta}. Se ha saltado el turno del rival.`;
                     } else {
                         this.turnoActual = this.turnoActual % 2 + 1;
                     }
@@ -95,7 +118,7 @@ class Partida {
                     return `La carta no está en la mano del jugador ${numJugador}`;
                 }
             } else {
-                return `Mal: Debes tirar una carta que tenga el mismo color, el mismo número, o una carta especial ("Salta", "Inverteix", "AgafaDos").`;
+                return `Error: Debes tirar una carta que tenga el mismo color, el mismo número o una carta especial ("Salta", "Inverteix", "AgafaDos").`;
             }
         }
     } else {
@@ -103,10 +126,7 @@ class Partida {
     }
 }
 
-activarSalta(carta) {
-  return carta.includes("Salta");
-}
-  
+
   puedeTirarCarta(carta) {
     if (!this.ultimaCarta) {
       return true; 
