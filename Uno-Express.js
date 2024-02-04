@@ -67,15 +67,18 @@ class Partida {
                     for (let i = 0; i < 2; i++) {
                         this.mans[jugadorSiguiente - 1].push(this.generarCartaRandom());
                     }
-
                     this.jugadoresQueHanPasado = 2;
                     this.turnoActual = numJugador;
 
                     return `El jugador ${numJugador} ha tirado ${carta}. El jugador ${jugadorSiguiente} ha robado 2 cartas. No puede tirar en la siguiente ronda.`;
-                } else if (carta.includes("Salta") || carta.includes("Inverteix")) {
+                } else if (carta.includes("Salta")) {
                     this.turnoActual = numJugador;
                     this.ultimaCarta = carta;
-                    return `El jugador ${numJugador} ha tirado ${carta}. Se ha saltado el turno del rival.`;
+                    return `El jugador ${numJugador} ha tirado ${carta}. Ha saltado el turno del jugador ${numJugador % 2 + 1}.`;
+                } else if (carta.includes("Inverteix")) {
+                    this.turnoActual = numJugador;
+                    this.ultimaCarta = carta;
+                    return `El jugador ${numJugador} ha tirado ${carta}. Se ha invertido el turno. Ahora le toca al jugador ${numJugador}.`;
                 } else {
                     this.turnoActual = this.turnoActual % 2 + 1;
                 }
@@ -103,10 +106,14 @@ class Partida {
                         this.turnoActual = numJugador;
 
                         return `El jugador ${numJugador} ha tirado ${carta}. El jugador ${jugadorSiguiente} ha robado 2 cartas. No puede tirar en la siguiente ronda.`;
-                    } else if (carta.includes("Salta") || carta.includes("Inverteix")) {
+                    } else if (carta.includes("Salta")) {
                         this.turnoActual = numJugador;
                         this.ultimaCarta = carta;
-                        return `El jugador ${numJugador} ha tirado ${carta}. Se ha saltado el turno del rival.`;
+                        return `El jugador ${numJugador} ha tirado ${carta}. Ha saltado/bloqueado el turno del jugador ${numJugador % 2 + 1}.`;
+                    } else if (carta.includes("Inverteix")) {
+                        this.turnoActual = numJugador;
+                        this.ultimaCarta = carta;
+                        return `El jugador ${numJugador} ha tirado ${carta}. Se ha invertido el turno. Ahora le toca al jugador ${numJugador}.`;
                     } else {
                         this.turnoActual = this.turnoActual % 2 + 1;
                     }
