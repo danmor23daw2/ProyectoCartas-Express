@@ -22,7 +22,7 @@ class Partida {
     const baralla = crearBaralla();
     const cartasNumerosColores = baralla.filter(carta => {
       const [, valor] = carta.split(' ');
-      return !['Salta', 'Inverteix', 'AgafaDos','CanviColor'].includes(valor);
+      return !['Salta', 'Inverteix', 'AgafaDos','CanviColor','AgafaQuatre'].includes(valor);
     });
     shuffle(cartasNumerosColores);
     this.cartaInicial = cartasNumerosColores[0];
