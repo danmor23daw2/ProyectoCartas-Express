@@ -85,7 +85,7 @@ class Partida {
                       this.mans[jugadorOponente - 1].push(this.generarCartaRandom());
                   }
 
-                  this.ultimaCarta = `${carta} (Rival ha robado 4 cartas)`;
+                  this.ultimaCarta = `${nuevoColor} AgafaQuatre`;
                   this.turnoActual = this.turnoActual % 2 + 1;
 
                   return `El jugador ${numJugador} ha tirado ${this.ultimaCarta}. El jugador ${jugadorOponente} ha robado 4 cartas.`;
