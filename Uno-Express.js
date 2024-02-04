@@ -22,7 +22,7 @@ class Partida {
     const baralla = crearBaralla();
     const cartasNumerosColores = baralla.filter(carta => {
       const [, valor] = carta.split(' ');
-      return !['Salta', 'Inverteix', 'AgafaDos'].includes(valor);
+      return !['Salta', 'Inverteix', 'AgafaDos','CanviColor'].includes(valor);
     });
     shuffle(cartasNumerosColores);
     this.cartaInicial = cartasNumerosColores[0];
@@ -58,87 +58,106 @@ class Partida {
       return [];
     }
   }
-
-  tirarCarta(numJugador, carta) {
+  tirarCarta(numJugador, carta, nuevoColor) {
     if (numJugador === this.turnoActual) {
-      const maJugador = this.mans[numJugador - 1];
-  
-      if (this.ultimaCarta === null) {
-        if (maJugador.includes(carta) && this.esMismaCartaInicial(carta)) {
-          const cartaIndex = maJugador.indexOf(carta);
-          maJugador.splice(cartaIndex, 1);
+        const maJugador = this.mans[numJugador - 1];
 
-          if (carta.includes("AgafaDos")) {
-            const jugadorSiguiente = this.turnoActual % 2 + 1;
+        if (this.ultimaCarta === null) {
+            if (maJugador.includes(carta) && (carta.includes("CanviColor") || this.esMismaCartaInicial(carta))) {
+                const cartaIndex = maJugador.indexOf(carta);
+                maJugador.splice(cartaIndex, 1);
 
-            for (let i = 0; i < 2; i++) {
-              this.mans[jugadorSiguiente - 1].push(this.generarCartaRandom());
-            }
-            this.jugadoresQueHanPasado = 2;
-            this.turnoActual = numJugador;
+                if (carta.includes("CanviColor")) {
+                    if (!nuevoColor || !["Vermell", "Verd", "Blau", "Groc"].includes(nuevoColor)) {
+                        return "Error: Debes proporcionar un nuevo color válido para la carta CanviColor (Vermell, Verd, Blau o Groc).";
+                    }
 
-            return `El jugador ${numJugador} ha tirado ${carta}. El jugador ${jugadorSiguiente} ha robado 2 cartas. No puede tirar en la siguiente ronda.`;
-          } else if (carta.includes("Salta")) {
-            this.turnoActual = numJugador;
-            this.ultimaCarta = carta;
-            return `El jugador ${numJugador} ha tirado ${carta}. Ha saltado el turno del jugador ${numJugador % 2 + 1}.`;
-          } else if (carta.includes("Inverteix")) {
-            this.turnoActual = numJugador;
-            this.ultimaCarta = carta;
-            return `El jugador ${numJugador} ha tirado ${carta}. Se ha invertido el turno. Ahora le toca al jugador ${numJugador}.`;
-          } else {
-            this.turnoActual = this.turnoActual % 2 + 1;
-          }
+                    this.cartaInicial = `${nuevoColor} CanviColor`;
+                    this.ultimaCarta = `${nuevoColor} CanviColor`;
 
-          this.ultimaCarta = carta;
+                    this.turnoActual = this.turnoActual % 2 + 1;
 
-          return `El jugador ${numJugador} ha tirado una carta: ${carta}`;
-        } else {
-          return `La carta no está en la mano del jugador ${numJugador} o no puede ser tirada.`;
-        }
-      } else {
-        if (this.puedeTirarCarta(carta)) {
-          const cartaIndex = maJugador.indexOf(carta);
-          if (cartaIndex !== -1) {
-            maJugador.splice(cartaIndex, 1);
+                    return `El jugador ${numJugador} ha tirado ${this.ultimaCarta} y ha elegido el color ${nuevoColor}.`;
+                }
 
-            if (carta.includes("AgafaDos")) {
-              const jugadorSiguiente = this.turnoActual % 2 + 1;
+                if (carta.includes("AgafaDos")) {
+                    const jugadorSiguiente = this.turnoActual % 2 + 1;
 
-              for (let i = 0; i < 2; i++) {
-                this.mans[jugadorSiguiente - 1].push(this.generarCartaRandom());
-              }
+                    for (let i = 0; i < 2; i++) {
+                        this.mans[jugadorSiguiente - 1].push(this.generarCartaRandom());
+                    }
+                    this.jugadoresQueHanPasado = 2;
+                    this.turnoActual = numJugador;
 
-              this.jugadoresQueHanPasado = 2;
-              this.turnoActual = numJugador;
+                    return `El jugador ${numJugador} ha tirado ${carta}. El jugador ${jugadorSiguiente} ha robado 2 cartas. No puede tirar en la siguiente ronda.`;
+                } else if (carta.includes("Salta")) {
+                    this.turnoActual = numJugador;
+                    this.ultimaCarta = carta;
+                    return `El jugador ${numJugador} ha tirado ${carta}. Ha saltado el turno del jugador ${numJugador % 2 + 1}.`;
+                } else if (carta.includes("Inverteix")) {
+                    this.turnoActual = numJugador;
+                    this.ultimaCarta = carta;
+                    return `El jugador ${numJugador} ha tirado ${carta}. Se ha invertido el turno. Ahora le toca al jugador ${numJugador}.`;
+                } else {
+                    this.turnoActual = this.turnoActual % 2 + 1;
+                }
 
-              return `El jugador ${numJugador} ha tirado ${carta}. El jugador ${jugadorSiguiente} ha robado 2 cartas. No puede tirar en la siguiente ronda.`;
-            } else if (carta.includes("Salta")) {
-              this.turnoActual = numJugador;
-              this.ultimaCarta = carta;
-              return `El jugador ${numJugador} ha tirado ${carta}. Ha saltado/bloqueado el turno del jugador ${numJugador % 2 + 1}.`;
-            } else if (carta.includes("Inverteix")) {
-              this.turnoActual = numJugador;
-              this.ultimaCarta = carta;
-              return `El jugador ${numJugador} ha tirado ${carta}. Se ha invertido el turno. Ahora le toca al jugador ${numJugador}.`;
+                this.ultimaCarta = carta;
+
+                return `El jugador ${numJugador} ha tirado una carta: ${carta}`;
             } else {
-              this.turnoActual = this.turnoActual % 2 + 1;
+                return `La carta no está en la mano del jugador ${numJugador} o no puede ser tirada. Carta en la mesa: ${this.cartaInicial}.`;
             }
-
-            this.ultimaCarta = carta;
-
-            return `El jugador ${numJugador} ha tirado una carta: ${carta}`;
-          } else {
-            return `La carta no está en la mano del jugador ${numJugador}`;
-          }
         } else {
-          return `Error: Debes tirar una carta que tenga el mismo color, el mismo número o una carta especial ("Salta", "Inverteix", "AgafaDos").`;
+            if (this.puedeTirarCarta(carta)) {
+                const cartaIndex = maJugador.indexOf(carta);
+                if (cartaIndex !== -1) {
+                    maJugador.splice(cartaIndex, 1);
+
+                    if (carta.includes("AgafaDos") || carta.includes("Salta") || carta.includes("Inverteix")) {
+                    } else {
+                        this.ultimaCarta = carta;
+                    }
+
+                    if (carta.includes("AgafaDos")) {
+                        const jugadorSiguiente = this.turnoActual % 2 + 1;
+
+                        for (let i = 0; i < 2; i++) {
+                            this.mans[jugadorSiguiente - 1].push(this.generarCartaRandom());
+                        }
+
+                        this.jugadoresQueHanPasado = 2;
+                        this.turnoActual = numJugador;
+
+                        return `El jugador ${numJugador} ha tirado ${carta}. El jugador ${jugadorSiguiente} ha robado 2 cartas. No puede tirar en la siguiente ronda.`;
+                    } else if (carta.includes("Salta")) {
+                        this.turnoActual = numJugador;
+                        this.ultimaCarta = carta;
+                        return `El jugador ${numJugador} ha tirado ${carta}. Ha saltado/bloqueado el turno del jugador ${numJugador % 2 + 1}.`;
+                    } else if (carta.includes("Inverteix")) {
+                        this.turnoActual = numJugador;
+                        this.ultimaCarta = carta;
+                        return `El jugador ${numJugador} ha tirado ${carta}. Se ha invertido el turno. Ahora le toca al jugador ${numJugador}.`;
+                    } else {
+                        this.turnoActual = this.turnoActual % 2 + 1;
+                    }
+
+                    this.ultimaCarta = carta;
+
+                    return `El jugador ${numJugador} ha tirado una carta: ${carta}`;
+                } else {
+                    return `La carta no está en la mano del jugador ${numJugador}`;
+                }
+            } else {
+                return `Error: Debes tirar una carta que tenga el mismo color, el mismo número o una carta especial ("Salta", "Inverteix", "AgafaDos").`;
+            }
         }
-      }
     } else {
-      return "No es tu turno para tirar.";
+        return "No es tu turno para tirar.";
     }
-  }
+}
+
+
 
   esMismaCartaInicial(carta) {
     const [inicialColor, inicialNumero] = this.cartaInicial.split(' ');
@@ -169,13 +188,17 @@ class Partida {
 
 function crearBaralla() {
   const colors = ["Vermell", "Verd", "Blau", "Groc"];
-  const valors = ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "Salta", "Inverteix", "AgafaDos"];
+  const valors = ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "Salta", "Inverteix", "AgafaDos", "CanviColor"];
 
   const baralla = [];
 
-  for (const color of colors) {
-    for (const valor of valors) {
-      baralla.push(`${color} ${valor}`);
+  for (const valor of valors) {
+    if (valor === "CanviColor") {
+      baralla.push(`${valor}`);
+    } else {
+      for (const color of colors) {
+        baralla.push(`${color} ${valor}`);
+      }
     }
   }
 
@@ -211,15 +234,32 @@ app.get('/api/mostrarCartes/:codiPartida/:numJugador', (req, res) => {
   }
 });
 
-app.put('/api/tirarCarta/:codiPartida/:carta/:numJugador', (req, res) => {
+app.put('/api/tirarCarta/:codiPartida/:carta/:numJugador/:nuevoColor?', (req, res) => {
   const codiPartida = parseInt(req.params.codiPartida);
   const cartaTirada = req.params.carta;
   const numJugador = parseInt(req.params.numJugador);
+  const nuevoColor = req.query.nuevoColor;
 
   if (esPartidaValida(codiPartida)) {
     const partida = partides[codiPartida - 1];
-    const resultadoTirada = partida.tirarCarta(numJugador, cartaTirada);
-    res.send(resultadoTirada);
+
+    if (cartaTirada.includes("CanviColor")) {
+      if (!nuevoColor || !["Vermell", "Verd", "Blau", "Groc"].includes(nuevoColor)) {
+        res.send("Error: Debes proporcionar un nuevo color válido para la carta CanviColor (Vermell, Verd, Blau o Groc).");
+        return;
+      }
+      
+      partida.cartaInicial = `${nuevoColor} CanviColor`;
+    }
+
+    const resultadoTirada = partida.tirarCarta(numJugador, cartaTirada, nuevoColor);
+
+    if (resultadoTirada.startsWith('Error')) {
+      const cartaEnMesa = partida.ultimaCarta;
+      res.send(`${resultadoTirada}. Carta en la mesa: ${cartaEnMesa}`);
+    } else {
+      res.send(resultadoTirada);
+    }
   } else {
     res.send("Codi de partida no vàlid.");
   }
@@ -242,7 +282,7 @@ app.put('/api/moureJugador/:codiPartida/passa/:numJugador', (req, res) => {
       const cartaRobada = baralla.pop();
       partida.mans[numJugador - 1].push(cartaRobada);
 
-      res.send(`El turno se ha pasado al jugador ${partida.turnoActual}. El jugador ${numJugador}`);
+      res.send(`El turno se ha pasado al jugador ${partida.turnoActual}. El jugador ${numJugador} ha robado 1 carta`);
     } else {
       res.send("No es tu turno para pasar.");
     }
