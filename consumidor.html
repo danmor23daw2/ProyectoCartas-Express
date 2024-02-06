@@ -63,6 +63,19 @@
       position: fixed;
       margin-left: -1000px;
       bottom: 20px;
+      margin-bottom: 50px;
+    }
+    #ultimaCartaTirada {
+      display: flex;
+      background-color: #fff;
+      padding: 10px;
+      border-radius: 5px;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+      max-width: 500px;
+      width: 100%;
+      position: fixed;
+      margin-left: -1000px;
+      bottom: 20px;
     }
   </style>
 </head>
@@ -110,6 +123,7 @@
   </form>
 
   <div id="resultados"></div>
+  <div id="ultimaCartaTirada"></div>
 
   <script>
     async function iniciarJuego() {
@@ -141,6 +155,7 @@
       const response = await fetch(url, { method: 'PUT' });
       const data = await response.text();
       document.getElementById('resultados').innerHTML = data;
+      document.getElementById('ultimaCartaTirada').innerHTML = `Última carta tirada: ${nuevoColorTirar} ${cartaTirar} por jugador ${numeroJugador}`;
     }
 
     async function pasarTurno() {
