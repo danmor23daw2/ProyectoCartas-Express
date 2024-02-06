@@ -365,5 +365,5 @@ function esPartidaValida(codiPartida) {
 }
 
 app.listen(8080, () => {
-  console.log(`Servidor en funcionament a http://localhost:8080`);
+  console.log(`Servidor en funcionament a http://localhost:8080/consumidor.html`);
 });
