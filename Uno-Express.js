@@ -66,31 +66,33 @@ class Partida {
           if (maJugador.includes(carta) && (carta.includes("CanviColor") || carta.includes("AgafaQuatre") || this.esMismaCartaInicial(carta))) {
               const cartaIndex = maJugador.indexOf(carta);
               maJugador.splice(cartaIndex, 1);
-
+      
               if (carta.includes("CanviColor")) {
-                  if (!nuevoColor || !["Vermell", "Verd", "Blau", "Groc"].includes(nuevoColor)) {
-                      return "Error: Debes proporcionar un nuevo color válido para la carta CanviColor (Vermell, Verd, Blau o Groc).";
-                  }
-
-                  this.cartaInicial = `${nuevoColor} CanviColor`;
-                  this.ultimaCarta = `${nuevoColor} CanviColor`;
-
-                  this.turnoActual = this.turnoActual % 2 + 1;
-
-                  return `El jugador ${numJugador} ha tirado ${this.ultimaCarta} y ha elegido el color ${nuevoColor}.`;
+                if (!nuevoColor || !["Vermell", "Verd", "Blau", "Groc"].includes(nuevoColor)) {
+                    return "Error: Debes proporcionar un nuevo color válido para la carta CanviColor (Vermell, Verd, Blau o Groc).";
+                }
+        
+                this.cartaInicial = `${nuevoColor} CanviColor`;
+                this.ultimaCarta = `${nuevoColor} CanviColor`;
+        
+                this.turnoActual = this.turnoActual % 2 + 1;
+        
+                return `El jugador ${numJugador} ha tirado ${this.ultimaCarta} y ha elegido el color ${nuevoColor}.`;
               } else if (carta.includes("AgafaQuatre")) {
-                  const jugadorOponente = this.turnoActual % 2 + 1;
-
-                  for (let i = 0; i < 4; i++) {
-                      this.mans[jugadorOponente - 1].push(this.generarCartaRandom());
-                  }
-
-                  this.ultimaCarta = `${nuevoColor} AgafaQuatre`;
-                  this.turnoActual = this.turnoActual % 2 + 1;
-
-                  return `El jugador ${numJugador} ha tirado ${this.ultimaCarta}. El jugador ${jugadorOponente} ha robado 4 cartas.`;
+                if (!nuevoColor || !["Vermell", "Verd", "Blau", "Groc"].includes(nuevoColor)) {
+                  return "Error: Debes proporcionar un nuevo color válido para la carta AgafaQuatre (Vermell, Verd, Blau o Groc).";
               }
+                const jugadorOponente = this.turnoActual % 2 + 1;
 
+                for (let i = 0; i < 4; i++) {
+                    this.mans[jugadorOponente - 1].push(this.generarCartaRandom());
+                }
+
+                this.ultimaCarta = `${nuevoColor} AgafaQuatre`;
+                this.turnoActual = this.turnoActual % 2 + 1;
+
+                return `El jugador ${numJugador} ha tirado ${this.ultimaCarta}. El jugador ${jugadorOponente} ha robado 4 cartas.`;
+                }
 
                 if (carta.includes("AgafaDos")) {
                     const jugadorSiguiente = this.turnoActual % 2 + 1;
@@ -121,10 +123,36 @@ class Partida {
                 return `La carta no está en la mano del jugador ${numJugador} o no puede ser tirada. Carta en la mesa: ${this.cartaInicial}.`;
             }
         } else {
-            if (this.puedeTirarCarta(carta)) {
+            if (this.puedeTirarCarta(carta, nuevoColor)) {
                 const cartaIndex = maJugador.indexOf(carta);
                 if (cartaIndex !== -1) {
                     maJugador.splice(cartaIndex, 1);
+                    if (carta.includes("CanviColor")) {
+                      if (!nuevoColor || !["Vermell", "Verd", "Blau", "Groc"].includes(nuevoColor)) {
+                          return "Error: Debes proporcionar un nuevo color válido para la carta CanviColor (Vermell, Verd, Blau o Groc).";
+                      }
+              
+                      this.cartaInicial = `${nuevoColor} CanviColor`;
+                      this.ultimaCarta = `${nuevoColor} CanviColor`;
+              
+                      this.turnoActual = this.turnoActual % 2 + 1;
+              
+                      return `El jugador ${numJugador} ha tirado ${this.ultimaCarta} y ha elegido el color ${nuevoColor}.`;
+                    } else if (carta.includes("AgafaQuatre")) {
+                      if (!nuevoColor || !["Vermell", "Verd", "Blau", "Groc"].includes(nuevoColor)) {
+                        return "Error: Debes proporcionar un nuevo color válido para la carta AgafaQuatre (Vermell, Verd, Blau o Groc).";
+                    }
+                      const jugadorOponente = this.turnoActual % 2 + 1;
+      
+                      for (let i = 0; i < 4; i++) {
+                          this.mans[jugadorOponente - 1].push(this.generarCartaRandom());
+                      }
+      
+                      this.ultimaCarta = `${nuevoColor} AgafaQuatre`;
+                      this.turnoActual = this.turnoActual % 2 + 1;
+      
+                      return `El jugador ${numJugador} ha tirado ${this.ultimaCarta}. El jugador ${jugadorOponente} ha robado 4 cartas.`;
+                      }
 
                     if (carta.includes("AgafaDos") || carta.includes("Salta") || carta.includes("Inverteix")) {
                     } else {
@@ -180,18 +208,29 @@ class Partida {
 
   puedeTirarCarta(carta) {
     if (!this.ultimaCarta) {
-      return true; 
+        return true; 
     }
-  
+
     const [ultimaColor, ultimaNumero] = this.ultimaCarta.split(' ');
     const [color, numero] = carta.split(' ');
-  
+
     if (numero === "Salta" || numero === "Inverteix" || numero === "AgafaDos") {
-      return color === ultimaColor || numero === ultimaNumero;
+        return color === ultimaColor || numero === ultimaNumero;
     }
-  
+
+    if (carta.includes("CanviColor")) {
+        return true;  
+    }
+
+    if (carta.includes("AgafaQuatre")) {
+        return true;  
+    }
+
     return color === ultimaColor || numero === ultimaNumero;
-  }
+}
+
+
+
 
   afegirMaJugador(maJugador) {
     this.mans.push(maJugador);
@@ -264,6 +303,9 @@ app.put('/api/tirarCarta/:codiPartida/:carta/:numJugador/:nuevoColor?', (req, re
           if (cartaTirada.includes("CanviColor")) {
               partida.cartaInicial = `${nuevoColor} CanviColor`;
           }
+          else if (cartaTirada.includes("AgafaQuatre")) {
+            partida.cartaInicial = `${nuevoColor} AgafaQuatre`;
+        }
       }
 
       const resultadoTirada = partida.tirarCarta(numJugador, cartaTirada, nuevoColor);
