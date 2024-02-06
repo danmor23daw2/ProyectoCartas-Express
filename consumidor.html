@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Juego de Cartas</title>
+  <style>
+    body {
+      font-family: 'Arial', sans-serif;
+      background-color: #f0f0f0;
+      margin: 0;
+      padding: 20px;
+      display: flex;
+      flex-direction:column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+    }
+
+    h1 {
+      color: #333;
+    }
+
+    form {
+      margin-bottom: 20px;
+      max-width: 400px;
+      width: 100%;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 5px;
+    }
+
+    input {
+      width: 100%;
+      padding: 8px;
+      margin-bottom: 10px;
+      box-sizing: border-box;
+    }
+
+    button {
+      width: 100%;
+      padding: 10px;
+      background-color: #4caf50;
+      color: #fff;
+      border: none;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background-color: #45a049;
+    }
+
+    #resultados {
+      display: flex;
+      background-color: #fff;
+      padding: 10px;
+      border-radius: 5px;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+      max-width: 500px;
+      width: 100%;
+      position: fixed;
+      margin-left: -1000px;
+      bottom: 20px;
+    }
+  </style>
+</head>
+<body>
+  <h1>Juego de Cartas</h1>
+
+  <form id="formIniciarJuego">
+    <label for="codigoPartidaIniciar">Código de Partida:</label>
+    <input type="number" id="codigoPartidaIniciar" name="codigoPartidaIniciar" required>
+    <button type="button" onclick="iniciarJuego()">Iniciar Juego</button>
+  </form>
+  <br>
+  <form id="formMostrarCartas">
+    <label for="codigoPartidaMostrar">Código de Partida:</label>
+    <input type="number" id="codigoPartidaMostrar" name="codigoPartidaMostrar" required>
+    <label for="numeroJugadorMostrar">Número de Jugador:</label>
+    <input type="number" id="numeroJugadorMostrar" name="numeroJugadorMostrar" required>
+    <button type="button" onclick="mostrarCartas()">Mostrar Cartas</button>
+  </form>
+<br>
+  <form id="formTirarCarta">
+    <label for="codigoPartidaTirar">Código de Partida:</label>
+    <input type="number" id="codigoPartidaTirar" name="codigoPartidaTirar" required>
+    <label for="numeroJugadorTirar">Número de Jugador:</label>
+    <input type="number" id="numeroJugadorTirar" name="numeroJugadorTirar" required>
+    <label for="cartaTirar">Carta:</label>
+    <input type="text" id="cartaTirar" name="cartaTirar" required>
+    <label for="nuevoColorTirar">Nuevo Color (Solo usar con AgafaQuatre y CanviColor):</label>
+    <input type="text" id="nuevoColorTirar" name="nuevoColorTirar">
+    <button type="button" onclick="tirarCarta()">Tirar Carta</button>
+  </form>
+  <br>
+  <form id="formPasarTurno">
+    <label for="codigoPartidaPasar">Código de Partida:</label>
+    <input type="number" id="codigoPartidaPasar" name="codigoPartidaPasar" required>
+    <label for="numeroJugadorPasar">Número de Jugador:</label>
+    <input type="number" id="numeroJugadorPasar" name="numeroJugadorPasar" required>
+    <button type="button" onclick="pasarTurno()">Pasar Turno</button>
+  </form>
+  <br>
+  <form id="formFinalizarPartida">
+    <label for="codigoPartidaFinalizar">Código de Partida:</label>
+    <input type="number" id="codigoPartidaFinalizar" name="codigoPartidaFinalizar" required>
+    <button type="button" onclick="finalizarPartida()">Finalizar Partida</button>
+  </form>
+
+  <div id="resultados"></div>
+
+  <script>
+    async function iniciarJuego() {
+      const codigoPartida = document.getElementById('codigoPartidaIniciar').value;
+      const response = await fetch(`/api/iniciarJoc/${codigoPartida}`, { method: 'POST' });
+      const data = await response.text();
+      document.getElementById('resultados').innerHTML = data;
+    }
+
+    async function mostrarCartas() {
+      const codigoPartida = document.getElementById('codigoPartidaMostrar').value;
+      const numeroJugador = document.getElementById('numeroJugadorMostrar').value;
+      const response = await fetch(`/api/mostrarCartes/${codigoPartida}/${numeroJugador}`);
+      const data = await response.json();
+      document.getElementById('resultados').innerHTML = JSON.stringify(data);
+    }
+
+    async function tirarCarta() {
+      const codigoPartida = document.getElementById('codigoPartidaTirar').value;
+      const numeroJugador = document.getElementById('numeroJugadorTirar').value;
+      const cartaTirar = document.getElementById('cartaTirar').value;
+      const nuevoColorTirar = document.getElementById('nuevoColorTirar').value;
+
+      let url = `/api/tirarCarta/${codigoPartida}/${cartaTirar}/${numeroJugador}`;
+      if (nuevoColorTirar) {
+        url += `?nuevoColor=${nuevoColorTirar}`;
+      }
+
+      const response = await fetch(url, { method: 'PUT' });
+      const data = await response.text();
+      document.getElementById('resultados').innerHTML = data;
+    }
+
+    async function pasarTurno() {
+      const codigoPartida = document.getElementById('codigoPartidaPasar').value;
+      const numeroJugador = document.getElementById('numeroJugadorPasar').value;
+      const response = await fetch(`/api/moureJugador/${codigoPartida}/passa/${numeroJugador}`, { method: 'PUT' });
+      const data = await response.text();
+      document.getElementById('resultados').innerHTML = data;
+    }
+
+    async function finalizarPartida() {
+      const codigoPartida = document.getElementById('codigoPartidaFinalizar').value;
+      const response = await fetch(`/api/acabarJoc/${codigoPartida}`, { method: 'DELETE' });
+      const data = await response.text();
+      document.getElementById('resultados').innerHTML = data;
+    }
+  </script>
+</body>
+</html>
